@@ -208,8 +208,7 @@ HAVING COUNT(actor_movie.movie_id) >= 2
 
 /* 1. Rock Nacional
 Es la semana del rock a nivel mundial, y nuestro gerente de Musimundos nos pide
-crear anuncios con canciones del género Rock.Hacé una consulta a nuestra base de
-datos que nos devuelva los nombres de las canciones que tengan género rock.
+crear anuncios con canciones del género Rock. Hacé una consulta a nuestra base de datos que nos devuelva los nombres de las canciones que tengan género rock.
 
 2. Deep Purple
 En el salón de Musimundos hay un cliente fanático de Deep Purple, este quiere
@@ -222,6 +221,34 @@ mobile, en la cual vas a poder escuchar musica online de tus artistas favoritos.
 
 4. Ranking canciones
 Desde el departamento de desarrollo de Musimundos están preparando el ranking de
-las canciones favoritas del público.Para ello, te piden que le pasemos el nombre de todas las canciones que están en una playlist, y el nombre de la playlist a la que pertenecen. Ojo! Tengamos cuidado de no repetir el nombre de las canciones. Para
-esta consulta vamos a tener que usar información de las tablas canciones,
-canciones_de_playlists y playlists. */
+las canciones favoritas del público.Para ello, te piden que le pasemos el nombre de todas las canciones que están en una playlist, y el nombre de la playlist a la que pertenecen. Ojo! Tengamos cuidado de no repetir el nombre de las canciones. Para esta consulta vamos a tener que usar información de las tablas canciones, canciones_de_playlists y playlists. */
+
+SELECT canciones.nombre AS nombre_canciones, generos.nombre AS genero
+FROM canciones
+INNER JOIN generos
+ON canciones.id_genero = generos.id
+WHERE generos.nombre = 'Rock'
+
+SELECT artistas.nombre AS nombre_artista, albumes.titulo AS albumes
+FROM artistas
+INNER JOIN albumes 
+ON artistas.id = albumes.id_artista
+WHERE artistas.nombre LIKE '%Deep Purple%'
+
+SELECT 
+canciones.nombre AS nombre_canciones, 
+tipos_de_medio.nombre AS tipos_de_medio
+FROM canciones
+INNER JOIN tipos_de_medio
+ON canciones.id_tipo_de_medio = tipos_de_medio.id
+WHERE tipos_de_medio.nombre LIKE '%MPEG audio file%'
+
+SELECT 
+DISTINCT canciones.nombre AS nombre_canciones,
+playlists.nombre AS nombre_playlist
+FROM canciones 
+INNER JOIN canciones_de_playlists
+ON canciones.id = canciones_de_playlists.id_cancion
+INNER JOIN playlists
+ON playlists.id = canciones_de_playlists.id_playlist
+ORDER BY nombre_playlist, nombre_canciones
