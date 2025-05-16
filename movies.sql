@@ -115,7 +115,7 @@ HAVING SUM(awards) > 5;
 
 /* CONSULTAS */
 
-/* JOIN */
+/* JOIN - PARTE I */
 
 /* 1. Utilizando la base de datos de movies, queremos conocer, por un lado, los títulos y el nombre del género de todas las series de la base de datos.
 2. Por otro lado, necesitamos listar los títulos de los episodios junto con el nombre y apellido de los actores que trabajan en cada uno de ellos.
@@ -148,3 +148,80 @@ FROM movies
 RIGHT JOIN genres
 ON movies.genre_id = genres.id
 GROUP BY genres.name
+
+/* JOIN - PARTE II */ 
+
+/* 1. Obtener los artistas que han actuado en una o más películas.
+2. Obtener las películas donde han participado más de un artista según nuestra base de datos.
+3. Obtener los artistas junto con los datos de las películas en las que han actuado. Incluir aquellos artistas que no han actuado en ninguna película.
+4. Obtener las películas que no se le han asignado artistas en nuestra base de datos.
+5. Obtener aquellos artistas que no han actuado en alguna película, según nuestra base de datos.
+6. Obtener aquellos artistas que han actuado en dos o más películas según nuestra base de datos. */
+
+SELECT actors.first_name, actors.last_name
+FROM actors
+INNER JOIN actor_movie
+ON actors.id = actor_movie.actor_id
+GROUP BY actors.first_name, actors.last_name
+HAVING COUNT(actor_movie.movie_id) >= 2;
+
+
+SELECT movies.title
+FROM movies
+INNER JOIN actor_movie
+ON movies.id = actor_movie.movie_id
+GROUP BY movies.title
+HAVING COUNT(actor_movie.actor_id) >= 2;
+
+
+SELECT actors.first_name, actors.last_name, movies.title
+FROM actors
+LEFT JOIN actor_movie
+ON actors.id = actor_movie.actor_id
+LEFT JOIN movies 
+ON actor_movie.movie_id = movies.id
+ORDER BY actors.first_name, actors.last_name, movies.title;
+
+
+SELECT movies.title
+FROM movies
+LEFT JOIN actor_movie
+ON movies.id = actor_movie.movie_id
+WHERE actor_movie.actor_id is null
+
+
+SELECT actors.first_name, actors.last_name
+FROM actors
+LEFT JOIN actor_movie
+ON actors.id = actor_movie.actor_id
+WHERE actor_movie.id is null
+
+SELECT actors.first_name, actors.last_name
+FROM actors 
+INNER JOIN actor_movie
+ON actors.id = actor_movie.actor_id
+GROUP BY actors.first_name, actors.last_name
+HAVING COUNT(actor_movie.movie_id) >= 2
+
+
+/* JOIN - PARTE III */
+
+/* 1. Rock Nacional
+Es la semana del rock a nivel mundial, y nuestro gerente de Musimundos nos pide
+crear anuncios con canciones del género Rock.Hacé una consulta a nuestra base de
+datos que nos devuelva los nombres de las canciones que tengan género rock.
+
+2. Deep Purple
+En el salón de Musimundos hay un cliente fanático de Deep Purple, este quiere
+comprar todos los álbumes que tengan como artista a Deep Purple. Hacé una
+consulta a nuestra base de datos que nos traiga el título del álbum y el autor, para saber si lo que le estamos vendiendo es correcto.
+
+3. MPEG
+En el departamento de desarrollo de Musimundos están creando la nueva aplicación
+mobile, en la cual vas a poder escuchar musica online de tus artistas favoritos. Para evitar posibles problemas de compatibilidad, los desarrolladores decidieron que sólo van a subir canciones que tengan el tipo de medio "MPEG audio file". Ayudá al equipo y obtengamos una lista en las cuales tengas el nombre de las canciones que tengan ese tipo de medio.
+
+4. Ranking canciones
+Desde el departamento de desarrollo de Musimundos están preparando el ranking de
+las canciones favoritas del público.Para ello, te piden que le pasemos el nombre de todas las canciones que están en una playlist, y el nombre de la playlist a la que pertenecen. Ojo! Tengamos cuidado de no repetir el nombre de las canciones. Para
+esta consulta vamos a tener que usar información de las tablas canciones,
+canciones_de_playlists y playlists. */
