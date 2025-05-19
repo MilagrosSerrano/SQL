@@ -204,51 +204,75 @@ GROUP BY actors.first_name, actors.last_name
 HAVING COUNT(actor_movie.movie_id) >= 2
 
 
-/* JOIN - PARTE III */
+/* SUBCONSULTAS */
 
-/* 1. Rock Nacional
-Es la semana del rock a nivel mundial, y nuestro gerente de Musimundos nos pide
-crear anuncios con canciones del género Rock. Hacé una consulta a nuestra base de datos que nos devuelva los nombres de las canciones que tengan género rock.
-
-2. Deep Purple
-En el salón de Musimundos hay un cliente fanático de Deep Purple, este quiere
-comprar todos los álbumes que tengan como artista a Deep Purple. Hacé una
-consulta a nuestra base de datos que nos traiga el título del álbum y el autor, para saber si lo que le estamos vendiendo es correcto.
-
-3. MPEG
-En el departamento de desarrollo de Musimundos están creando la nueva aplicación
-mobile, en la cual vas a poder escuchar musica online de tus artistas favoritos. Para evitar posibles problemas de compatibilidad, los desarrolladores decidieron que sólo van a subir canciones que tengan el tipo de medio "MPEG audio file". Ayudá al equipo y obtengamos una lista en las cuales tengas el nombre de las canciones que tengan ese tipo de medio.
-
-4. Ranking canciones
-Desde el departamento de desarrollo de Musimundos están preparando el ranking de
-las canciones favoritas del público.Para ello, te piden que le pasemos el nombre de todas las canciones que están en una playlist, y el nombre de la playlist a la que pertenecen. Ojo! Tengamos cuidado de no repetir el nombre de las canciones. Para esta consulta vamos a tener que usar información de las tablas canciones, canciones_de_playlists y playlists. */
-
-SELECT canciones.nombre AS nombre_canciones, generos.nombre AS genero
-FROM canciones
-INNER JOIN generos
-ON canciones.id_genero = generos.id
-WHERE generos.nombre = 'Rock'
-
-SELECT artistas.nombre AS nombre_artista, albumes.titulo AS albumes
-FROM artistas
-INNER JOIN albumes 
-ON artistas.id = albumes.id_artista
-WHERE artistas.nombre LIKE '%Deep Purple%'
+/* 1. Generar una consulta que devuelva como resultado todas las películas cuyo rating esté por arriba del promedio. */
 
 SELECT 
-canciones.nombre AS nombre_canciones, 
-tipos_de_medio.nombre AS tipos_de_medio
-FROM canciones
-INNER JOIN tipos_de_medio
-ON canciones.id_tipo_de_medio = tipos_de_medio.id
-WHERE tipos_de_medio.nombre LIKE '%MPEG audio file%'
+title,
+rating, 
+(SELECT AVG(rating) FROM movies) AS rating_promedio
+FROM movies
+WHERE rating >= 
+(
+  SELECT AVG(rating) FROM movies
+)
+
+/* 2. Modificar la consulta anterior, agregando un filtro en el cálculo del promedio, excluyendo los que tienen rating = 0.
+Esto es para que el promedio del rating no esté afectado por los ceros. */
 
 SELECT 
-DISTINCT canciones.nombre AS nombre_canciones,
-playlists.nombre AS nombre_playlist
-FROM canciones 
-INNER JOIN canciones_de_playlists
-ON canciones.id = canciones_de_playlists.id_cancion
-INNER JOIN playlists
-ON playlists.id = canciones_de_playlists.id_playlist
-ORDER BY nombre_playlist, nombre_canciones
+title,
+rating, 
+(SELECT AVG(rating) FROM movies) AS rating_promedio
+FROM movies
+WHERE rating >= 
+(
+  SELECT AVG(rating) FROM movies WHERE rating <> 0
+)
+
+
+/* 3. Generar una consulta que evalúe todos los actores que no han actuado en una película ni tampoco en una serie. */
+
+SELECT * FROM actors
+WHERE actors.id NOT IN (SELECT actor_id FROM actor_movie)
+AND actors.id NOT IN (SELECT actor_id FROM actor_episode)
+
+/* CONSULTAS UNION  */
+
+/* Entretenimiento:
+Generar un resultado que combine los nombres de las películas y los nombres de las series.
+Adicionalmente debe contener el género de la película o serie. Y una columna adicional que sea “Tipo de entretenimiento” con los valores de película o serie. */
+
+SELECT 
+movies.title AS Titulo, 
+genres.name AS Genero, 
+"Pelicula" AS Tipo_entretenimiento
+FROM movies
+JOIN genres 
+ON movies.genre_id = genres.id
+UNION ALL
+SELECT 
+series.title AS Titulo, 
+genres.name AS Genero, 
+"Serie" AS Tipo_entretenimiento
+FROM series
+JOIN genres 
+ON series.genre_id = genres.id
+ORDER BY Genero
+
+/* Movies
+El administrador de la base de datos creó una nueva tabla para los inserts nuevos de películas. Estos se encontraran en la tabla Movies_2020.
+Cómo resultado, debemos crear una query que consolide los nombres de las películas de la tabla de Movies y Movies_2020.
+¿Qué sucede si en vez de Union all empleamos Union? */
+
+SELECT 
+movies.title AS Titulo
+FROM movies
+UNION
+SELECT 
+movies_2020.title AS Titulo
+FROM movies_2020
+ORDER BY Titulo
+
+/* Si se utiliza UNION ALL en lugar de UNION, se obtendrían datos repetidos, ya que hay títulos que se encuentran en ambas tablas. */
